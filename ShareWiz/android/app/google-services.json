@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "508826641846",
+    "firebase_url": "https://sharewiz-680d0.firebaseio.com",
+    "project_id": "sharewiz-680d0",
+    "storage_bucket": "sharewiz-680d0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:508826641846:android:14b97436927a079209cd17",
+        "android_client_info": {
+          "package_name": "com.sharewiz"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "508826641846-go08fug2clod6855arane1eshmtk0c70.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDdLsQ7JaqQOTpKAbOJwXR0tUraI7q36DE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "508826641846-go08fug2clod6855arane1eshmtk0c70.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
