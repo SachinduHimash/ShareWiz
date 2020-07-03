@@ -2,7 +2,8 @@
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
 import ValidationComponent from 'react-native-form-validator';
-
+import {YellowBox} from 'react-native';
+YellowBox.ignoreWarnings(['Setting a timer']);
 import {
   View,
   StyleSheet,
@@ -12,11 +13,14 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
+  AsyncStorage,
 } from 'react-native';
 import {b_img, logo} from './../../../images';
 // eslint-disable-next-line no-unused-vars
 import {createStackNavigator, createAppContainer} from 'react-navigation';
 import LinearGradient from 'react-native-linear-gradient';
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
 
 const styles = StyleSheet.create({
   container: {
@@ -95,10 +99,33 @@ export default class Welcome extends ValidationComponent {
     }
   }
 
-  submit() {
+  login() {
     this.emailValidator();
     this.passwordValidator();
+    if (this.state.email !== '' && this.state.password !== '') {
+      auth()
+        .signInWithEmailAndPassword(this.state.email, this.state.password)
+        .then(data => {
+          firestore()
+            .collection('users')
+            .doc(data.user.uid)
+            .get()
+            .then(documentSnapshot => {
+              if (documentSnapshot.data().role === 'admin') {
+                this.props.navigation.navigate('AdminLayout');
+              } else {
+                this.props.navigation.navigate('ChooseClasses');
+              }
+            });
+        })
+
+        .catch(error => {
+          // eslint-disable-next-line no-alert
+          alert(error);
+        });
+    }
   }
+
   render() {
     return (
       <ScrollView style={styles.container}>
@@ -135,7 +162,7 @@ export default class Welcome extends ValidationComponent {
             <Text style={{color: 'red'}}>{this.state.passwordError}</Text>
           </View>
           <TouchableOpacity
-            onPress={() => this.submit()}
+            onPress={() => this.login()}
             style={{
               height: '6.5%',
               width: '25%',

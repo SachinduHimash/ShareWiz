@@ -7,6 +7,8 @@ import 'react-native-gesture-handler';
 import {createStackNavigator} from 'react-navigation-stack';
 import {createAppContainer} from 'react-navigation';
 import {NavigationContainer} from '@react-navigation/native';
+import AdminLayout from './screens/adminLayout';
+import ChooseClasses from './screens/chooseClasses';
 
 export default class App extends React.Component {
   render() {
@@ -20,6 +22,12 @@ const AppNavigator = createStackNavigator(
     },
     SignUp: {
       screen: SignUp,
+    },
+    AdminLayout: {
+      screen: AdminLayout,
+    },
+    ChooseClasses: {
+      screen: ChooseClasses,
     },
   },
   {

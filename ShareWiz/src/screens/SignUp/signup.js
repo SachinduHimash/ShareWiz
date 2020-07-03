@@ -3,8 +3,10 @@ import React, {Component} from 'react';
 // eslint-disable-next-line no-unused-vars
 import {createStackNavigator, createAppContainer} from 'react-navigation';
 import DropDownPicker from 'react-native-dropdown-picker';
-import firebase from '../../../database/firebase';
-// import firestore from '@react-native-firebase/firestore';
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+// require('firebase/firestore');
+import AwesomeAlert from 'react-native-awesome-alerts';
 
 import {
   View,
@@ -14,6 +16,7 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import {signup_img} from './../../../images';
 import LinearGradient from 'react-native-linear-gradient';
@@ -146,34 +149,37 @@ export default class SignUp extends Component {
       this.state.email !== '' &&
       this.state.password !== ''
     ) {
-      firebase
-        .auth()
+      auth()
         .createUserWithEmailAndPassword(this.state.email, this.state.password)
-        .then(res => {
-          res.user.updateProfile({
-            firstName: this.state.firstName,
-            lastName: this.state.lastName,
-            role: this.state.role,
-          });
-          console.log('User registered successfully!');
-          firebase
-            .firestore()
+        .then(data => {
+          console.log(JSON.stringify(data, null, 2));
+
+          firestore()
             .collection('users')
-            .add({
+            .doc(data.user.uid)
+            .set({
               firstName: this.state.firstName,
               lastName: this.state.lastName,
               email: this.state.email,
               role: this.state.role,
             })
-            .then(res => {
-              console.log('User added to database');
+            .then(snapshot => {
+              this.props.navigation.navigate('Welcome');
             })
-            .catch(error => this.setState({errorMessage: error.message}));
-          this.props.navigation.navigate('Welcome');
+            .catch(error => console.log(error));
         })
-        .catch(error => this.setState({errorMessage: error.message}));
+        .catch(error => {
+          if (error.code === 'auth/email-already-in-use') {
+            console.log('That email address is already in use!');
+          }
+
+          if (error.code === 'auth/invalid-email') {
+            console.log('That email address is invalid!');
+          }
+
+          console.error(error);
+        });
     }
-    console.warn(this.state.errorMessage);
   }
   render() {
     return (
