@@ -9,6 +9,7 @@ import {createAppContainer} from 'react-navigation';
 import {NavigationContainer} from '@react-navigation/native';
 import AdminLayout from './screens/adminLayout';
 import ChooseClasses from './screens/chooseClasses';
+import Profile from './screens/profile';
 
 export default class App extends React.Component {
   render() {
@@ -28,6 +29,9 @@ const AppNavigator = createStackNavigator(
     },
     ChooseClasses: {
       screen: ChooseClasses,
+    },
+    Profile:{
+      screen: Profile,
     },
   },
   {
