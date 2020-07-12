@@ -38,8 +38,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignSelf: 'center',
     marginTop: 20,
-    paddingVertical: 5,
-    paddingHorizontal: 15,
+    paddingVertical: 20,
+    paddingHorizontal: 25,
     borderWidth: 0.6,
     borderColor: '#aa5ab4',
     marginBottom: '5%',
@@ -191,7 +191,7 @@ export default class Profile extends Component {
 
   async signOut() {
     await auth().signOut();
-    navigation.navigate('Welcome');
+    this.props.navigation.navigate('Welcome');
   }
 
   render() {

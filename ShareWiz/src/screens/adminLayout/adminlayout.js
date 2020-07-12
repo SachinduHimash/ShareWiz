@@ -10,6 +10,7 @@ import AdminTeacher from './teacher';
 import Admin from './admins';
 import Notifications from '../notifications';
 import Profile from '../profile';
+import AdminClasses from './classes';
 
 const Tab = createMaterialBottomTabNavigator();
 export default class AdminLayout extends Component {
@@ -61,6 +62,16 @@ export default class AdminLayout extends Component {
                   color={color}
                   size={26}
                 />
+              ),
+            }}
+          />
+          <Tab.Screen
+            name="Classes"
+            component={AdminClasses}
+            options={{
+              tabBarLabel: 'Classes',
+              tabBarIcon: ({color}) => (
+                <MaterialCommunityIcons name="domain" color={color} size={26} />
               ),
             }}
           />

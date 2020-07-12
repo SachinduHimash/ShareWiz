@@ -164,8 +164,36 @@ export default class SignUp extends Component {
               role: this.state.role,
             })
             .then(snapshot => {
-              this.props.navigation.navigate('Welcome');
+              if (this.state.role.value === 'student') {
+                firestore()
+                  .collection('students')
+                  .doc(data.user.uid)
+                  .set({
+                    firstName: this.state.firstName,
+                    lastName: this.state.lastName,
+                    email: this.state.email,
+                  })
+                  .then(() => {
+                    this.props.navigation.navigate('Welcome');
+                  })
+                  .catch(error => console.log(error));
+              }
+              if (this.state.role.value === 'teacher') {
+                firestore()
+                  .collection('teachers')
+                  .doc(data.user.uid)
+                  .set({
+                    firstName: this.state.firstName,
+                    lastName: this.state.lastName,
+                    email: this.state.email,
+                  })
+                  .then(() => {
+                    this.props.navigation.navigate('Welcome');
+                  })
+                  .catch(error => console.log(error));
+              }
             })
+
             .catch(error => console.log(error));
         })
         .catch(error => {
