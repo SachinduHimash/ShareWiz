@@ -223,6 +223,9 @@ export default class Admin extends Component {
           console.error(error);
         });
     }
+    deleteAdmin(){
+      firestore().collection('admins').doc()
+    }
   }
   render() {
     return (
@@ -520,7 +523,7 @@ export default class Admin extends Component {
                       </LinearGradient>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      onPress={() => this.openDialog()}
+                      onPress={() => this.deleteAdmin(item.)}
                       style={{
                         height: 40,
                         width: '30%',
