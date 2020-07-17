@@ -161,8 +161,9 @@ export default class SignUp extends Component {
               firstName: this.state.firstName,
               lastName: this.state.lastName,
               email: this.state.email,
-              role: this.state.role,
+              role: this.state.role.value,
               active: true,
+              isFirstTime: true,
             })
             .then(snapshot => {
               if (this.state.role.value === 'student') {
@@ -173,6 +174,7 @@ export default class SignUp extends Component {
                     firstName: this.state.firstName,
                     lastName: this.state.lastName,
                     email: this.state.email,
+                    userID: data.user.uid,
                   })
                   .then(() => {
                     this.props.navigation.navigate('Welcome');
@@ -187,6 +189,7 @@ export default class SignUp extends Component {
                     firstName: this.state.firstName,
                     lastName: this.state.lastName,
                     email: this.state.email,
+                    userID: data.user.uid,
                   })
                   .then(() => {
                     this.props.navigation.navigate('Welcome');
