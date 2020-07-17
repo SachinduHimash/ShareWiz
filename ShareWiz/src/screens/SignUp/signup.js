@@ -162,6 +162,7 @@ export default class SignUp extends Component {
               lastName: this.state.lastName,
               email: this.state.email,
               role: this.state.role,
+              active: true,
             })
             .then(snapshot => {
               if (this.state.role.value === 'student') {

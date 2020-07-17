@@ -111,10 +111,14 @@ export default class Welcome extends ValidationComponent {
             .doc(data.user.uid)
             .get()
             .then(documentSnapshot => {
-              if (documentSnapshot.data().role === 'admin') {
-                this.props.navigation.navigate('AdminLayout');
+              if (documentSnapshot.data().active === true) {
+                if (documentSnapshot.data().role === 'admin') {
+                  this.props.navigation.navigate('AdminLayout');
+                } else {
+                  this.props.navigation.navigate('ChooseClasses');
+                }
               } else {
-                this.props.navigation.navigate('ChooseClasses');
+                alert('Your account has been banned by the admin');
               }
             });
         })

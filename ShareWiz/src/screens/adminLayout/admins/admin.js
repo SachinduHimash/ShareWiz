@@ -66,10 +66,7 @@ const styles = StyleSheet.create({
 export default class Admin extends Component {
   constructor(props) {
     super(props);
-    setInterval(() => {
-      this.getAdmins();
-    }, 1000);
-
+    this.getAdmins();
     this.state = {
       adminList: [],
     };
@@ -117,7 +114,7 @@ export default class Admin extends Component {
     }
   }
   passwordValidator() {
-    if (this.state.password === '') {
+    if (this.state.password === '' || this.state.password === null) {
       this.setState({
         passwordError: 'Password is required',
       });
@@ -144,6 +141,7 @@ export default class Admin extends Component {
   }
   state = {
     dialogVisible: false,
+    dialogVisible2: false,
     firstName: '',
     lastName: '',
     email: '',
@@ -155,6 +153,7 @@ export default class Admin extends Component {
     passwordError: '',
     confirmPasswordError: '',
     role: '',
+    updatingID: '',
   };
   openDialog() {
     this.setState({dialogVisible: true});
@@ -187,6 +186,7 @@ export default class Admin extends Component {
               lastName: this.state.lastName,
               email: this.state.email,
               role: this.state.role,
+              active: true,
             })
             .then(() => {
               firestore()
@@ -199,6 +199,7 @@ export default class Admin extends Component {
                   userID: data.user.uid,
                 })
                 .then(() => {
+                  this.getAdmins();
                   this.setState({firstName: ''});
                   this.setState({lastName: ''});
                   this.setState({email: ''});
@@ -223,8 +224,53 @@ export default class Admin extends Component {
           console.error(error);
         });
     }
-    deleteAdmin(){
-      firestore().collection('admins').doc()
+  }
+  deleteAdmin(userID) {
+    firestore()
+      .collection('admins')
+      .doc(userID)
+      .delete()
+      .then(() => {
+        console.log('Admin deleted!');
+        firestore()
+          .collection('users')
+          .doc(userID)
+          .set({
+            active: false,
+          })
+          .then(this.getAdmins())
+          .catch(error => console.log(error));
+      })
+
+      .catch(error => console.log(error));
+  }
+  updateAdmin() {
+    this.firstNameValidator();
+    this.lastNameValidator();
+    if (this.state.firstName !== '' && this.state.lastName !== '') {
+      firestore()
+        .collection('users')
+        .doc(this.state.updatingID)
+        .update({
+          firstName: this.state.firstName,
+          lastName: this.state.lastName,
+        })
+        .then(() => {
+          firestore()
+            .collection('admins')
+            .doc(this.state.updatingID)
+            .update({
+              firstName: this.state.firstName,
+              lastName: this.state.lastName,
+            })
+            .then(() => {
+              this.setState({firstName: ''});
+              this.setState({lastName: ''});
+              this.getAdmins();
+              this.setState({dialogVisible2: false});
+            });
+        })
+        .catch(error => console.log(error));
     }
   }
   render() {
@@ -418,6 +464,113 @@ export default class Admin extends Component {
             </ScrollView>
           </Dialog>
         </View>
+        <View>
+          <Dialog
+            dialogStyle={{marginTop: -10, height: '70%'}}
+            visible={this.state.dialogVisible2}
+            onTouchOutside={() => this.setState({dialogVisible2: false})}>
+            <ScrollView>
+              <MaterialCommunityIcons
+                style={{alignSelf: 'flex-end'}}
+                name="close"
+                color="#aa5ab4"
+                size={26}
+                onPress={() => this.setState({dialogVisible2: false})}
+              />
+              <Text
+                style={{
+                  alignSelf: 'center',
+                  color: '#aa5ab4',
+                  fontSize: 30,
+                  fontWeight: '600',
+                }}>
+                Update Admin
+              </Text>
+
+              <Text
+                style={{
+                  marginTop: 10,
+                  marginBottom: 2,
+                  color: '#aa5ab4',
+                  marginLeft: 25,
+                  fontWeight: 'bold',
+                  fontSize: 17,
+                }}>
+                First Name
+              </Text>
+              <View style={styles.text_input}>
+                <TextInput
+                  placeholder="Enter admin first name"
+                  placeholderTextColor="#aa5ab4"
+                  onChangeText={firstName => this.setState({firstName})}
+                  value={this.state.firstName}
+                  onBlur={() => this.firstNameValidator()}
+                />
+              </View>
+              <View style={{paddingLeft: '12%', alignItems: 'flex-start'}}>
+                <Text style={{color: 'red'}}>{this.state.firstNameError}</Text>
+              </View>
+              <Text
+                style={{
+                  marginTop: 5,
+                  marginBottom: 2,
+                  color: '#aa5ab4',
+                  marginLeft: 25,
+                  fontWeight: 'bold',
+                  fontSize: 17,
+                }}>
+                Last Name
+              </Text>
+              <View style={styles.text_input}>
+                <TextInput
+                  placeholder="Enter admin last name"
+                  placeholderTextColor="#aa5ab4"
+                  onChangeText={lastName => this.setState({lastName})}
+                  value={this.state.lastName}
+                  onBlur={() => this.lastNameValidator()}
+                />
+              </View>
+              <View style={{paddingLeft: '12%', alignItems: 'flex-start'}}>
+                <Text style={{color: 'red'}}>{this.state.lastNameError}</Text>
+              </View>
+
+              <TouchableOpacity
+                onPress={() => this.updateAdmin()}
+                style={{
+                  height: 40,
+                  width: '85%',
+                  marginTop: '5%',
+                  marginBottom: '5%',
+                  borderRadius: 10,
+
+                  alignSelf: 'center',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                <LinearGradient
+                  style={{
+                    height: '100%',
+                    width: '100%',
+
+                    marginTop: '3%',
+                    color: '#aa5ab4',
+                    borderRadius: 10,
+
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                  colors={['#aa5ab4', '#873991']}>
+                  <Text
+                    style={{
+                      color: 'white',
+                    }}>
+                    Update Admin
+                  </Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </ScrollView>
+          </Dialog>
+        </View>
         <TouchableOpacity
           onPress={() => this.openDialog()}
           style={{
@@ -490,7 +643,12 @@ export default class Admin extends Component {
                       justifyContent: 'flex-start',
                     }}>
                     <TouchableOpacity
-                      onPress={() => this.openDialog()}
+                      onPress={() =>
+                        this.setState({
+                          dialogVisible2: true,
+                          updatingID: item.userID,
+                        })
+                      }
                       style={{
                         height: 40,
                         width: '30%',
@@ -523,7 +681,7 @@ export default class Admin extends Component {
                       </LinearGradient>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      onPress={() => this.deleteAdmin(item.)}
+                      onPress={() => this.deleteAdmin(item.userID)}
                       style={{
                         height: 40,
                         width: '30%',
