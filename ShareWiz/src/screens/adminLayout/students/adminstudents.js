@@ -66,21 +66,21 @@ const styles = StyleSheet.create({
 export default class AdminStudents extends Component {
   constructor(props) {
     super(props);
-    this.getTeachers();
+    this.getStudents();
     this.state = {
-      teacherList: [],
+      studentList: [],
     };
   }
-  getTeachers = async () => {
+  getStudents = async () => {
     var snapShotList = [];
     var snapShot = await firestore()
-      .collection('teachers')
+      .collection('students')
       .get();
     snapShot.forEach(doc => {
       snapShotList.push(doc.data());
     });
-    this.setState({teacherList: snapShotList});
-    console.log(this.state.teacherList);
+    this.setState({studentList: snapShotList});
+    console.log(this.state.studentList);
   };
 
   firstNameValidator() {
@@ -159,7 +159,7 @@ export default class AdminStudents extends Component {
     this.setState({dialogVisible: true});
     console.log('dialog');
   }
-  addTeacher() {
+  addStudent() {
     this.setState({role: 'teacher'});
     this.firstNameValidator();
     this.lastNameValidator();
@@ -191,7 +191,7 @@ export default class AdminStudents extends Component {
             })
             .then(() => {
               firestore()
-                .collection('teachers')
+                .collection('students')
                 .doc(data.user.uid)
                 .set({
                   firstName: this.state.firstName,
@@ -200,7 +200,7 @@ export default class AdminStudents extends Component {
                   userID: data.user.uid,
                 })
                 .then(() => {
-                  this.getTeachers();
+                  this.getStudents();
                   this.setState({firstName: ''});
                   this.setState({lastName: ''});
                   this.setState({email: ''});
@@ -226,26 +226,26 @@ export default class AdminStudents extends Component {
         });
     }
   }
-  deleteTeacher(userID) {
+  deleteStudent(userID) {
     firestore()
-      .collection('teachers')
+      .collection('students')
       .doc(userID)
       .delete()
       .then(() => {
-        console.log('Teacher deleted!');
+        console.log('Student deleted!');
         firestore()
           .collection('users')
           .doc(userID)
           .set({
             active: false,
           })
-          .then(this.getTeachers())
+          .then(this.getStudents())
           .catch(error => console.log(error));
       })
 
       .catch(error => console.log(error));
   }
-  updateTeacher() {
+  updateStudent() {
     this.firstNameValidator();
     this.lastNameValidator();
     if (this.state.firstName !== '' && this.state.lastName !== '') {
@@ -258,7 +258,7 @@ export default class AdminStudents extends Component {
         })
         .then(() => {
           firestore()
-            .collection('teachers')
+            .collection('students')
             .doc(this.state.updatingID)
             .update({
               firstName: this.state.firstName,
@@ -297,7 +297,7 @@ export default class AdminStudents extends Component {
                   fontSize: 30,
                   fontWeight: '600',
                 }}>
-                Add a teacher
+                Add a student
               </Text>
 
               <Text
@@ -313,7 +313,7 @@ export default class AdminStudents extends Component {
               </Text>
               <View style={styles.text_input}>
                 <TextInput
-                  placeholder="Enter teacher's first name"
+                  placeholder="Enter student's first name"
                   placeholderTextColor="#aa5ab4"
                   onChangeText={firstName => this.setState({firstName})}
                   value={this.state.firstName}
@@ -336,7 +336,7 @@ export default class AdminStudents extends Component {
               </Text>
               <View style={styles.text_input}>
                 <TextInput
-                  placeholder="Enter teacher's last name"
+                  placeholder="Enter student's last name"
                   placeholderTextColor="#aa5ab4"
                   onChangeText={lastName => this.setState({lastName})}
                   value={this.state.lastName}
@@ -362,7 +362,7 @@ export default class AdminStudents extends Component {
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCompleteType="email"
-                  placeholder="Enter teacher's E-mail"
+                  placeholder="Enter student's E-mail"
                   placeholderTextColor="#aa5ab4"
                   onChangeText={email => this.setState({email})}
                   value={this.state.email}
@@ -429,7 +429,7 @@ export default class AdminStudents extends Component {
                 </Text>
               </View>
               <TouchableOpacity
-                onPress={() => this.addTeacher()}
+                onPress={() => this.addStudent()}
                 style={{
                   height: 40,
                   width: '85%',
@@ -458,7 +458,7 @@ export default class AdminStudents extends Component {
                     style={{
                       color: 'white',
                     }}>
-                    Add a Teacher
+                    Add a Student
                   </Text>
                 </LinearGradient>
               </TouchableOpacity>
@@ -485,7 +485,7 @@ export default class AdminStudents extends Component {
                   fontSize: 30,
                   fontWeight: '600',
                 }}>
-                Update Teacher
+                Update Student
               </Text>
 
               <Text
@@ -501,7 +501,7 @@ export default class AdminStudents extends Component {
               </Text>
               <View style={styles.text_input}>
                 <TextInput
-                  placeholder="Enter teacher first name"
+                  placeholder="Enter student first name"
                   placeholderTextColor="#aa5ab4"
                   onChangeText={firstName => this.setState({firstName})}
                   value={this.state.firstName}
@@ -524,7 +524,7 @@ export default class AdminStudents extends Component {
               </Text>
               <View style={styles.text_input}>
                 <TextInput
-                  placeholder="Enter teacher last name"
+                  placeholder="Enter student last name"
                   placeholderTextColor="#aa5ab4"
                   onChangeText={lastName => this.setState({lastName})}
                   value={this.state.lastName}
@@ -536,7 +536,7 @@ export default class AdminStudents extends Component {
               </View>
 
               <TouchableOpacity
-                onPress={() => this.updateTeacher()}
+                onPress={() => this.updateStudent()}
                 style={{
                   height: 40,
                   width: '85%',
@@ -565,7 +565,7 @@ export default class AdminStudents extends Component {
                     style={{
                       color: 'white',
                     }}>
-                    Update Teacher
+                    Update Student
                   </Text>
                 </LinearGradient>
               </TouchableOpacity>
@@ -602,7 +602,7 @@ export default class AdminStudents extends Component {
               style={{
                 color: 'white',
               }}>
-              Add a Teacher
+              Add a Student
             </Text>
           </LinearGradient>
         </TouchableOpacity>
@@ -618,7 +618,7 @@ export default class AdminStudents extends Component {
           </View>
           <View style={styles.card2}>
             <FlatList
-              data={this.state.teacherList}
+              data={this.state.studentList}
               renderItem={({item}) => (
                 <Fragment>
                   <Text
@@ -682,7 +682,7 @@ export default class AdminStudents extends Component {
                       </LinearGradient>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      onPress={() => this.deleteTeacher(item.userID)}
+                      onPress={() => this.deleteStudent(item.userID)}
                       style={{
                         height: 40,
                         width: '30%',
@@ -724,4 +724,3 @@ export default class AdminStudents extends Component {
     );
   }
 }
-

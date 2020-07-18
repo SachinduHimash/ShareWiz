@@ -17,7 +17,6 @@ import {Dialog} from 'react-native-simple-dialogs';
 import {Icon} from 'react-native-elements';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-
 const styles = StyleSheet.create({
   container: {
     width: '100%',
