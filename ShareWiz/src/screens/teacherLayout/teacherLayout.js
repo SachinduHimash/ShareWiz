@@ -9,11 +9,12 @@ import {NavigationContainer} from '@react-navigation/native';
 import Notifications from '../notifications';
 import Profile from '../profile';
 
-import TeacherStudent from './students';
+
 import ClassForums from '../class';
+import TeacherStudent from './students/teacherStudents';
 
 const Tab = createMaterialBottomTabNavigator();
-export default class AdminLayout extends Component {
+export default class TeacherLayout extends Component {
   static navigationOptions = ({navigation}) => {
     return {
       header: () => null,

@@ -1,8 +1,10 @@
-import React, {Component} from 'react';
+/* eslint-disable react-native/no-inline-styles */
+import React, {Component, Fragment} from 'react';
 import {Text, Icon, View} from 'react-native';
 import {createMaterialBottomTabNavigator} from '@react-navigation/material-bottom-tabs';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import {createStackNavigator, createAppContainer} from 'react-navigation';
+import {createAppContainer, StackNavigator} from 'react-navigation';
+import {createStackNavigator} from 'react-navigation-stack';
 
 import {NavigationContainer} from '@react-navigation/native';
 import AdminStudents from './students';
@@ -11,15 +13,16 @@ import Admin from './admins';
 import Notifications from '../notifications';
 import Profile from '../profile';
 import AdminClasses from './classes';
+import Welcome from '../Welcome_page/welcome';
 
 const Tab = createMaterialBottomTabNavigator();
+
 export default class AdminLayout extends Component {
   static navigationOptions = ({navigation}) => {
     return {
       header: () => null,
     };
   };
-
   render() {
     return (
       <NavigationContainer>

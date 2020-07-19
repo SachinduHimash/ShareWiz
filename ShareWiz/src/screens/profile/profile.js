@@ -14,9 +14,14 @@ import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
 import ImagePicker from 'react-native-image-picker';
 import {imagePickerOptions, uploadFileToFireBase} from '../../utils/index';
-import {createStackNavigator, createAppContainer} from 'react-navigation';
+import {
+  createStackNavigator,
+  createAppContainer,
+  StackNavigator,
+} from 'react-navigation';
 import LinearGradient from 'react-native-linear-gradient';
 import * as firebase from 'firebase';
+import Welcome from '../Welcome_page';
 
 const styles = StyleSheet.create({
   container: {
@@ -53,6 +58,7 @@ const styles = StyleSheet.create({
     height: 40,
   },
 });
+
 export default class Profile extends Component {
   constructor(props) {
     super(props);
@@ -150,7 +156,7 @@ export default class Profile extends Component {
     });
   };
   reauthenticate(currentPassword) {
-    console.log("ggggggggggggggggggggggggg");
+    console.log('ggggggggggggggggggggggggg');
     var user = auth().currentUser;
     var cred = firebase.auth.EmailAuthProvider.credential(
       user.email,
@@ -191,7 +197,8 @@ export default class Profile extends Component {
 
   async signOut() {
     await auth().signOut();
-    this.props.navigation.navigate('Welcome');
+
+    this.props.navigation.navigate('Teachers');
   }
 
   render() {
@@ -291,9 +298,7 @@ export default class Profile extends Component {
               autoCompleteType="password"
               placeholder="Enter your current password"
               placeholderTextColor="#aa5ab4"
-              onChangeText={currentPassword =>
-                this.setState({currentPassword})
-              }
+              onChangeText={currentPassword => this.setState({currentPassword})}
               value={this.state.currentPassword}
               onBlur={() => this.currentPasswordValidator()}
             />
@@ -347,9 +352,7 @@ export default class Profile extends Component {
               autoCompleteType="password"
               placeholder="Confirm your new password"
               placeholderTextColor="#aa5ab4"
-              onChangeText={confirmPassword =>
-                this.setState({confirmPassword})
-              }
+              onChangeText={confirmPassword => this.setState({confirmPassword})}
               value={this.state.confirmPassword}
               onBlur={() => this.confirmPasswordValidator()}
             />

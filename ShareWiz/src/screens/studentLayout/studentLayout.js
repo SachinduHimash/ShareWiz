@@ -1,8 +1,59 @@
 import React, {Component} from 'react';
-import {Text} from 'react-native';
+import {Text, Icon, View} from 'react-native';
+import {createMaterialBottomTabNavigator} from '@react-navigation/material-bottom-tabs';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import {createStackNavigator, createAppContainer} from 'react-navigation';
 
+import {NavigationContainer} from '@react-navigation/native';
+
+
+import Profile from '../profile';
+
+
+import ClassForums from '../class';
+
+const Tab = createMaterialBottomTabNavigator();
 export default class StudentLayout extends Component {
+  static navigationOptions = ({navigation}) => {
+    return {
+      header: () => null,
+    };
+  };
+
   render() {
-    return <Text>Student Layout</Text>;
+    return (
+      <NavigationContainer>
+        <Tab.Navigator
+          initialRouteName="Profile"
+          activeColor="white"
+          barStyle={{backgroundColor: '#aa5ab4'}}>
+          <Tab.Screen
+            name="Classes"
+            component={ClassForums}
+            options={{
+              tabBarLabel: 'Classes',
+              tabBarIcon: ({color}) => (
+                <MaterialCommunityIcons name="domain" color={color} size={26} />
+              ),
+            }}
+          />
+
+          <Tab.Screen
+            name="Profile"
+            component={Profile}
+            options={{
+              tabBarLabel: 'Profile',
+              tabBarIcon: ({color}) => (
+                <MaterialCommunityIcons
+                  name="account"
+                  color={color}
+                  size={26}
+                />
+              ),
+            }}
+          />
+        </Tab.Navigator>
+      </NavigationContainer>
+    );
   }
 }
