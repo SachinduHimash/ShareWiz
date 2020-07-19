@@ -78,6 +78,7 @@ export default class Admin extends Component {
     var role;
     var snapShotList = [];
     var setList = [];
+    var snapShot;
 
     await firestore()
       .collection('users')
@@ -87,7 +88,7 @@ export default class Admin extends Component {
         role = querySnapshot._data.role;
       });
     if (role === 'admin') {
-      var snapShot = await firestore()
+      snapShot = await firestore()
         .collection('notifications')
         .orderBy('createdAt', 'desc')
         .get();
@@ -100,6 +101,25 @@ export default class Admin extends Component {
 
       this.state.snapShotList2.forEach(item => {
         if (item.to === 'admin') {
+          setList.push(item);
+        }
+      });
+      this.setState({notificationList: setList});
+      console.log(this.state.notificationList);
+    } else {
+      snapShot = await firestore()
+        .collection('notifications')
+        .orderBy('createdAt', 'desc')
+        .get();
+      console.log(snapShot);
+      snapShot.forEach(doc => {
+        snapShotList.push(doc.data());
+      });
+
+      this.setState({snapShotList2: snapShotList});
+
+      this.state.snapShotList2.forEach(item => {
+        if (item.to === currentUser.uid) {
           setList.push(item);
         }
       });

@@ -1,8 +1,84 @@
 import React, {Component} from 'react';
-import {Text} from 'react-native';
+import {Text, Icon, View} from 'react-native';
+import {createMaterialBottomTabNavigator} from '@react-navigation/material-bottom-tabs';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import {createStackNavigator, createAppContainer} from 'react-navigation';
 
-export default class TeacherLayout extends Component {
+import {NavigationContainer} from '@react-navigation/native';
+
+import Notifications from '../notifications';
+import Profile from '../profile';
+
+import TeacherStudent from './students';
+import ClassForums from '../class';
+
+const Tab = createMaterialBottomTabNavigator();
+export default class AdminLayout extends Component {
+  static navigationOptions = ({navigation}) => {
+    return {
+      header: () => null,
+    };
+  };
+
   render() {
-    return <Text>Teacher Layout</Text>;
+    return (
+      <NavigationContainer>
+        <Tab.Navigator
+          initialRouteName="Profile"
+          activeColor="white"
+          barStyle={{backgroundColor: '#aa5ab4'}}>
+          <Tab.Screen
+            name="Classes"
+            component={ClassForums}
+            options={{
+              tabBarLabel: 'Classes',
+              tabBarIcon: ({color}) => (
+                <MaterialCommunityIcons name="domain" color={color} size={26} />
+              ),
+            }}
+          />
+
+          <Tab.Screen
+            name="Students"
+            component={TeacherStudent}
+            options={{
+              tabBarLabel: 'Students',
+              tabBarIcon: ({color}) => (
+                <MaterialCommunityIcons
+                  name="account-group"
+                  color={color}
+                  size={26}
+                />
+              ),
+            }}
+          />
+          <Tab.Screen
+            name="Notifications"
+            component={Notifications}
+            options={{
+              tabBarLabel: 'Notifications',
+              tabBarIcon: ({color}) => (
+                <MaterialCommunityIcons name="bell" color={color} size={26} />
+              ),
+            }}
+          />
+
+          <Tab.Screen
+            name="Profile"
+            component={Profile}
+            options={{
+              tabBarLabel: 'Profile',
+              tabBarIcon: ({color}) => (
+                <MaterialCommunityIcons
+                  name="account"
+                  color={color}
+                  size={26}
+                />
+              ),
+            }}
+          />
+        </Tab.Navigator>
+      </NavigationContainer>
+    );
   }
 }
