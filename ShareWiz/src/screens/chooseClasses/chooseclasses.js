@@ -22,6 +22,7 @@ import {
 } from 'react-native';
 import {signup_img} from './../../../images';
 import LinearGradient from 'react-native-linear-gradient';
+import {add} from 'react-native-reanimated';
 
 const styles = StyleSheet.create({
   container: {
@@ -110,7 +111,50 @@ export default class ChooseClasses extends Component {
     console.log(this.state.classList);
   };
 
-  ChooseClass(classID) {}
+  async chooseClass(classID) {
+    var currentUser = auth().currentUser;
+    var userID = currentUser.uid;
+    var userName;
+    await firestore()
+      .collection('users')
+      .doc(currentUser.uid)
+      .get()
+      .then(snapShot => {
+        console.log(snapShot);
+        userName = snapShot._data.firstName + ' ' + snapShot._data.lastName;
+      });
+
+    await firestore()
+      .collection('users')
+      .doc(currentUser.uid)
+      .collection('classes')
+      .add({
+        classID,
+      })
+      .then(() => {
+        firestore()
+          .collection('classes')
+          .doc(classID)
+          .collection('studentList')
+          .add({
+            userID,
+            userName,
+          });
+      })
+      .catch(error => console.log(error));
+  }
+  submit() {
+    var currentUser = auth().currentUser;
+    firestore()
+      .collection('users')
+      .doc(currentUser.uid)
+      .update({
+        isFirstTime: false,
+      })
+      .then(() => {
+        this.props.navigation.navigate('StudentLayout');
+      });
+  }
 
   render() {
     return (
@@ -184,6 +228,18 @@ export default class ChooseClasses extends Component {
                 </Fragment>
               )}
             />
+            <TouchableOpacity onPress={() => this.submit()}>
+              <Text
+                style={{
+                  alignSelf: 'flex-end',
+                  color: '#aa5ab4',
+                  marginRight: 25,
+                  fontSize: 23,
+                  marginTop: 7,
+                }}>
+                Next ->
+              </Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </ImageBackground>

@@ -10,6 +10,8 @@ import {NavigationContainer} from '@react-navigation/native';
 import AdminLayout from './screens/adminLayout';
 import ChooseClasses from './screens/chooseClasses';
 import Profile from './screens/profile';
+import StudentLayout from './screens/studentLayout';
+import TeacherLayout from './screens/teacherLayout';
 
 export default class App extends React.Component {
   render() {
@@ -32,6 +34,12 @@ const AppNavigator = createStackNavigator(
     },
     Profile:{
       screen: Profile,
+    },
+    StudentLayout:{
+      screen: StudentLayout,
+    },
+    TeacherLayout:{
+      screen: TeacherLayout,
     },
   },
   {

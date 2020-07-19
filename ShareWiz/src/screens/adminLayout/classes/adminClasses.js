@@ -148,6 +148,7 @@ export default class AdminClasses extends Component {
           teacherName: this.state.teacherName,
           grade: this.state.grade,
           classID: this.state.classID,
+          teacherID: '',
         })
         .then(() => {
           this.getClasses();
