@@ -130,7 +130,7 @@ export default class Welcome extends ValidationComponent {
                 documentSnapshot.data().active === true &&
                 documentSnapshot.data().isFirstTime === true
               ) {
-                this.props.navigation.navigate('ChooseClasses');
+                this.props.navigation.navigate('ChooseTeacherClasses');
               } else if (
                 documentSnapshot.data().role === 'teacher' &&
                 documentSnapshot.data().active === true &&

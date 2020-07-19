@@ -135,7 +135,21 @@ export default class SignUp extends Component {
       this.setState({passwordError: ''});
     }
   }
-  submit() {
+
+  async sendAdminNotification() {
+    var fullName = this.state.firstName + ' ' + this.state.lastName;
+    await firestore()
+      .collection('notifications')
+      .doc()
+      .set({
+        to: 'admin',
+        message:
+          fullName +
+          ' has been added to the system as a teacher. View in teacher tab for more information.',
+        createdAt: new Date(),
+      });
+  }
+  async submit() {
     this.roleValidator();
     this.firstNameValidator();
     this.lastNameValidator();
@@ -182,6 +196,7 @@ export default class SignUp extends Component {
                   .catch(error => console.log(error));
               }
               if (this.state.role.value === 'teacher') {
+                this.sendAdminNotification();
                 firestore()
                   .collection('teachers')
                   .doc(data.user.uid)

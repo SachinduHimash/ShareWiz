@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export default class ChooseClasses extends Component {
+export default class ChooseTeacherClasses extends Component {
   static navigationOptions = ({navigation}) => {
     return {
       header: () => null,
@@ -111,53 +111,12 @@ export default class ChooseClasses extends Component {
     console.log(this.state.classList);
   };
 
-  async sendTeacherNotification(classID) {
-    var currentUser = auth().currentUser;
-    var userName;
-    var teacherID;
-    var className;
-
-    await firestore()
-      .collection('classes')
-      .doc(classID)
-      .get()
-      .then(querySnapshot => {
-        console.log(querySnapshot);
-        className =
-          'Grade ' + querySnapshot._data.grade + ' ' + querySnapshot._data.name;
-        teacherID = querySnapshot._data.teacherID;
-      });
-
-    await firestore()
-      .collection('users')
-      .doc(currentUser.uid)
-      .get()
-      .then(snapShot => {
-        userName = snapShot._data.firstName + ' ' + snapShot._data.lastName;
-      });
-    await firestore()
-      .collection('notifications')
-      .doc()
-      .set({
-        to: teacherID,
-        message: userName + ' has been added to your ' + className,
-        createdAt: new Date(),
-      });
-  }
-
   async chooseClass(classID) {
     var currentUser = auth().currentUser;
     var userID = currentUser.uid;
-    var userName;
+
     var className;
 
-    await firestore()
-      .collection('users')
-      .doc(currentUser.uid)
-      .get()
-      .then(snapShot => {
-        userName = snapShot._data.firstName + ' ' + snapShot._data.lastName;
-      });
     await firestore()
       .collection('classes')
       .doc(classID)
@@ -179,12 +138,9 @@ export default class ChooseClasses extends Component {
         firestore()
           .collection('classes')
           .doc(classID)
-          .collection('studentList')
-          .add({
-            userID,
-            userName,
+          .update({
+            teacherID: userID,
           });
-        this.sendTeacherNotification(classID);
       })
       .catch(error => console.log(error));
   }
@@ -197,7 +153,7 @@ export default class ChooseClasses extends Component {
         isFirstTime: false,
       })
       .then(() => {
-        this.props.navigation.navigate('StudentLayout');
+        this.props.navigation.navigate('TeacherLayout');
       });
   }
 

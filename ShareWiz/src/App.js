@@ -12,6 +12,7 @@ import ChooseClasses from './screens/chooseClasses';
 import Profile from './screens/profile';
 import StudentLayout from './screens/studentLayout';
 import TeacherLayout from './screens/teacherLayout';
+import ChooseTeacherClasses from './screens/chooseTeacherClasses';
 
 export default class App extends React.Component {
   render() {
@@ -32,19 +33,23 @@ const AppNavigator = createStackNavigator(
     ChooseClasses: {
       screen: ChooseClasses,
     },
-    Profile:{
+    Profile: {
       screen: Profile,
     },
-    StudentLayout:{
+    StudentLayout: {
       screen: StudentLayout,
     },
-    TeacherLayout:{
+    TeacherLayout: {
       screen: TeacherLayout,
+    },
+    ChooseTeacherClasses: {
+      screen: ChooseTeacherClasses,
     },
   },
   {
     initialRouteName: 'Welcome',
   },
+
 );
 
 const AppContainer = createAppContainer(AppNavigator);
