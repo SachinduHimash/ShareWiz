@@ -29,6 +29,7 @@ const AppNavigator = createStackNavigator(
     },
     AdminLayout: {
       screen: AdminLayout,
+      
     },
     ChooseClasses: {
       screen: ChooseClasses,
