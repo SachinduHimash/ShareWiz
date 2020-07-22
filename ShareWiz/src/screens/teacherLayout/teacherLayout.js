@@ -2,18 +2,20 @@ import React, {Component} from 'react';
 import {Text, Icon, View} from 'react-native';
 import {createMaterialBottomTabNavigator} from '@react-navigation/material-bottom-tabs';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import {createStackNavigator, createAppContainer} from 'react-navigation';
+import {createAppContainer} from 'react-navigation';
+import {createStackNavigator} from 'react-navigation-stack';
 
 import {NavigationContainer} from '@react-navigation/native';
 
 import Notifications from '../notifications';
 import Profile from '../profile';
 
-
-import ClassForums from '../class';
 import TeacherStudent from './students/teacherStudents';
+import ClassNavigation from '../class/classNavigation';
+
 
 const Tab = createMaterialBottomTabNavigator();
+
 export default class TeacherLayout extends Component {
   static navigationOptions = ({navigation}) => {
     return {
@@ -30,7 +32,7 @@ export default class TeacherLayout extends Component {
           barStyle={{backgroundColor: '#aa5ab4'}}>
           <Tab.Screen
             name="Classes"
-            component={ClassForums}
+            component={ClassNavigation}
             options={{
               tabBarLabel: 'Classes',
               tabBarIcon: ({color}) => (
@@ -83,3 +85,4 @@ export default class TeacherLayout extends Component {
     );
   }
 }
+

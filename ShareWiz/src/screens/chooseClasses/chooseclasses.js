@@ -180,7 +180,8 @@ export default class ChooseClasses extends Component {
           .collection('classes')
           .doc(classID)
           .collection('studentList')
-          .add({
+          .doc(userID)
+          .set({
             userID,
             userName,
           });

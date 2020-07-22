@@ -8,9 +8,9 @@ import {NavigationContainer} from '@react-navigation/native';
 
 
 import Profile from '../profile';
+import ClassNavigation from '../class/classNavigation';
 
 
-import ClassForums from '../class';
 
 const Tab = createMaterialBottomTabNavigator();
 export default class StudentLayout extends Component {
@@ -29,7 +29,7 @@ export default class StudentLayout extends Component {
           barStyle={{backgroundColor: '#aa5ab4'}}>
           <Tab.Screen
             name="Classes"
-            component={ClassForums}
+            component={ClassNavigation}
             options={{
               tabBarLabel: 'Classes',
               tabBarIcon: ({color}) => (
