@@ -130,7 +130,8 @@ export default class ChooseTeacherClasses extends Component {
       .collection('users')
       .doc(currentUser.uid)
       .collection('classes')
-      .add({
+      .doc(classID)
+      .set({
         classID,
         className,
       })

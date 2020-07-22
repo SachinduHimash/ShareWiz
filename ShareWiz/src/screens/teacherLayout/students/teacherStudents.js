@@ -141,7 +141,15 @@ export default class TeacherStudent extends Component {
       .doc(this.state.classID)
       .collection('studentList')
       .doc(userID)
-      .delete();
+      .delete()
+      .then(() => {
+        firestore()
+          .collection('users')
+          .doc(userID)
+          .collection('classes')
+          .doc(this.state.classID)
+          .delete();
+      });
     this.setState({dialogVisible: false});
   }
 
