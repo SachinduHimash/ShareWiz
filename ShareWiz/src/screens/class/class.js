@@ -60,15 +60,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 3,
     borderWidth: 0.6,
     borderColor: '#aa5ab4',
-    marginBottom: '5%',
+    marginBottom: 5,
   },
 });
 export default class ClassForums extends Component {
   constructor(props) {
     super(props);
-    this.getAdmins();
+
     this.state = {
-      adminList: [],
+      snapShopList2: [],
+      forumList: [],
       classID: '',
       className: '',
       teacherID: '',
@@ -77,17 +78,28 @@ export default class ClassForums extends Component {
     var classID = this.props.navigation.state.params.classID;
 
     this.getClassDetails(classID);
+    this.getForums(classID);
   }
-  getAdmins = async () => {
+  getForums = async classID => {
     var snapShotList = [];
+    var setList = [];
     var snapShot = await firestore()
-      .collection('admins')
+      .collection('forums')
+      .orderBy('createdAt', 'desc')
       .get();
     snapShot.forEach(doc => {
-      snapShotList.push(doc.data());
+      snapShotList.push(doc._data);
     });
-    this.setState({adminList: snapShotList});
-    console.log(this.state.adminList);
+
+    this.setState({snapShopList2: snapShotList});
+
+    this.state.snapShopList2.forEach(item => {
+      if (item.classID === classID) {
+        setList.push(item);
+      }
+    });
+    this.setState({forumList: setList});
+    console.log(this.state.forumList);
   };
 
   async getClassDetails(classID) {
@@ -121,6 +133,7 @@ export default class ClassForums extends Component {
     dialogVisible2: false,
     description: '',
     descriptionError: '',
+    
   };
 
   openDialog() {
@@ -157,7 +170,47 @@ export default class ClassForums extends Component {
         createdAt: new Date(),
         classID: this.state.classID,
         forumID: refID,
+        likes: 0,
       });
+    this.getForums(this.state.classID);
+  }
+  async deletePost(forumID) {
+    var currentUserID = auth().currentUser.uid;
+    await firestore()
+      .collection('forums')
+      .doc(forumID)
+      .get()
+      .then(data => {
+        
+        // eslint-disable-next-line prettier/prettier
+        if (data._data.creatorID === currentUserID || data._data.teacherID === currentUserID){
+          firestore()
+            .collection('forums')
+            .doc(forumID)
+            .delete();
+          this.getForums(this.state.classID)
+        }else{
+          // eslint-disable-next-line no-alert
+          alert('You can only delete the posts you have created');
+        }
+      });
+  }
+  async likePost(forumID){
+    var postLikes;
+    await firestore()
+      .collection('forums')
+      .doc(forumID)
+      .get()
+      .then(data => {
+        postLikes = data._data.likes;
+      });
+    await firestore()
+      .collection('forums')
+      .doc(forumID)
+      .update({
+        likes: postLikes + 1,
+    });
+    this.getForums(this.state.classID);
   }
   render() {
     return (
@@ -292,18 +345,40 @@ export default class ClassForums extends Component {
           </LinearGradient>
         </TouchableOpacity>
         <View style={styles.card}>
-          <View style={styles.card2}>
-            <FlatList
-              data={this.state.adminList}
-              renderItem={({item}) => (
-                <Fragment>
+          <FlatList
+            data={this.state.forumList}
+            renderItem={({item}) => (
+              <Fragment>
+                <View style={styles.card2}>
+                  <View
+                    style={{
+                      marginRight: 10,
+                      flexDirection: 'row',
+                      justifyContent: 'flex-end',
+                    }}>
+                    <MaterialCommunityIcons
+                      style={{alignSelf: 'flex-end', marginRight: 10}}
+                      name="thumb-up-outline"
+                      color="#aa5ab4"
+                      size={25}
+                      onPress={() => this.likePost(item.forumID)}
+                    />
+                    <MaterialCommunityIcons
+                      style={{alignSelf: 'flex-end'}}
+                      name="delete-outline"
+                      color="#aa5ab4"
+                      size={25}
+                      onPress={() => this.deletePost(item.forumID)}
+                    />
+                  </View>
                   <Text
                     style={{
-                      fontSize: 20,
+                      fontSize: 19,
                       color: '#aa5ab4',
                       marginLeft: 25,
+                      marginBottom: 10,
                     }}>
-                    {item.firstName} {item.lastName}
+                    {item.description}
                   </Text>
                   <Text
                     style={{
@@ -312,89 +387,23 @@ export default class ClassForums extends Component {
                       marginLeft: 25,
                       fontStyle: 'italic',
                     }}>
-                    {item.email}
+                    Created by {item.creatorName}
                   </Text>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      justifyContent: 'flex-start',
-                    }}>
-                    <TouchableOpacity
-                      onPress={() =>
-                        this.setState({
-                          dialogVisible2: true,
-                          updatingID: item.userID,
-                        })
-                      }
-                      style={{
-                        height: 40,
-                        width: '30%',
-                        marginTop: 5,
-                        marginBottom: '5%',
-                        borderRadius: 10,
-                        marginLeft: 20,
-
-                        alignItems: 'center',
-                      }}>
-                      <LinearGradient
-                        style={{
-                          height: '100%',
-                          width: '100%',
-
-                          marginTop: '3%',
-                          color: '#aa5ab4',
-                          borderRadius: 10,
-
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                        }}
-                        colors={['#aa5ab4', '#873991']}>
-                        <Text
-                          style={{
-                            color: 'white',
-                          }}>
-                          Update
-                        </Text>
-                      </LinearGradient>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={() => this.deleteAdmin(item.userID)}
-                      style={{
-                        height: 40,
-                        width: '30%',
-                        marginTop: 5,
-                        marginBottom: '5%',
-                        borderRadius: 10,
-                        marginLeft: 20,
-
-                        alignItems: 'center',
-                      }}>
-                      <LinearGradient
-                        style={{
-                          height: '100%',
-                          width: '100%',
-
-                          marginTop: '3%',
-                          color: '#aa5ab4',
-                          borderRadius: 10,
-
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                        }}
-                        colors={['#c42b2b', '#942525']}>
-                        <Text
-                          style={{
-                            color: 'white',
-                          }}>
-                          Delete
-                        </Text>
-                      </LinearGradient>
-                    </TouchableOpacity>
+                  <View style={{flexDirection:'row',marginLeft:25}}>
+                  <MaterialCommunityIcons
+                    style={{ alignSelf: 'flex-end', marginRight: 10 }}
+                    name="thumb-up-outline"
+                    color="#aa5ab4"
+                    size={15}
+                    onPress={() => this.setState({ dialogVisible: false })}
+                  />
+                    <Text style={{ color: '#aa5ab4'}}>Likes : {item.likes}</Text>
                   </View>
-                </Fragment>
-              )}
-            />
-          </View>
+
+                </View>
+              </Fragment>
+            )}
+          />
         </View>
       </ScrollView>
     );
