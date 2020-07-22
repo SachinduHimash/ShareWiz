@@ -1,5 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, {Component} from 'react';
+import {useState} from 'react';
 import {Fragment} from 'react';
 import {
   Text,
@@ -8,6 +9,8 @@ import {
   View,
   TextInput,
   FlatList,
+  AsyncStorage,
+  Image,
 } from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import LinearGradient from 'react-native-linear-gradient';
@@ -16,6 +19,8 @@ import firestore from '@react-native-firebase/firestore';
 import {Dialog} from 'react-native-simple-dialogs';
 import {Icon} from 'react-native-elements';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import UploadScreen from './uploadScreen';
+import storage from '@react-native-firebase/storage';
 
 const styles = StyleSheet.create({
   container: {
@@ -63,6 +68,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
 });
+
 export default class ClassForums extends Component {
   constructor(props) {
     super(props);
@@ -73,13 +79,16 @@ export default class ClassForums extends Component {
       classID: '',
       className: '',
       teacherID: '',
+      imageLink: '',
     };
+    console.log(this.props.navigation.state.params.fileName);
     console.log(this.props.navigation.state.params.classID);
     var classID = this.props.navigation.state.params.classID;
 
     this.getClassDetails(classID);
     this.getForums(classID);
   }
+
   getForums = async classID => {
     var snapShotList = [];
     var setList = [];
@@ -133,7 +142,7 @@ export default class ClassForums extends Component {
     dialogVisible2: false,
     description: '',
     descriptionError: '',
-    
+    imageLink: '',
   };
 
   openDialog() {
@@ -142,37 +151,51 @@ export default class ClassForums extends Component {
   }
 
   async createForum() {
+    const imageLink = await AsyncStorage.getItem('ImageLink');
+    await AsyncStorage.removeItem('ImageLink');
+    console.log(imageLink);
+    var finalUrl;
+    await storage()
+      .ref(imageLink)
+      .getDownloadURL()
+      .then(url => {
+        console.log(url);
+        finalUrl = url;
+      });
     this.descriptionValidator();
+    if (this.state.description !== '') {
+      console.log(this.props.navigation.state.params.fileName);
+      var currentUser = auth().currentUser;
+      var creatorName;
+      var refID;
+      await firestore()
+        .collection('users')
+        .doc(currentUser.uid)
+        .get()
+        .then(data => {
+          creatorName = data._data.firstName + ' ' + data._data.lastName;
+        });
 
-    var currentUser = auth().currentUser;
-    var creatorName;
-    var refID;
-    await firestore()
-      .collection('users')
-      .doc(currentUser.uid)
-      .get()
-      .then(data => {
-        creatorName = data._data.firstName + ' ' + data._data.lastName;
-      });
-
-    var ref = await firestore()
-      .collection('forums')
-      .doc();
-    refID = ref.id;
-    await firestore()
-      .collection('forums')
-      .doc(refID)
-      .set({
-        description: this.state.description,
-        teacherID: this.state.teacherID,
-        creatorID: currentUser.uid,
-        creatorName: creatorName,
-        createdAt: new Date(),
-        classID: this.state.classID,
-        forumID: refID,
-        likes: 0,
-      });
-    this.getForums(this.state.classID);
+      var ref = await firestore()
+        .collection('forums')
+        .doc();
+      refID = ref.id;
+      await firestore()
+        .collection('forums')
+        .doc(refID)
+        .set({
+          description: this.state.description,
+          teacherID: this.state.teacherID,
+          creatorID: currentUser.uid,
+          creatorName: creatorName,
+          createdAt: new Date(),
+          classID: this.state.classID,
+          forumID: refID,
+          likes: 0,
+          imageLink: finalUrl,
+        });
+      this.getForums(this.state.classID);
+    }
   }
   async deletePost(forumID) {
     var currentUserID = auth().currentUser.uid;
@@ -181,21 +204,23 @@ export default class ClassForums extends Component {
       .doc(forumID)
       .get()
       .then(data => {
-        
         // eslint-disable-next-line prettier/prettier
-        if (data._data.creatorID === currentUserID || data._data.teacherID === currentUserID){
+                       if (
+          data._data.creatorID === currentUserID ||
+          data._data.teacherID === currentUserID
+        ) {
           firestore()
             .collection('forums')
             .doc(forumID)
             .delete();
-          this.getForums(this.state.classID)
-        }else{
+          this.getForums(this.state.classID);
+        } else {
           // eslint-disable-next-line no-alert
           alert('You can only delete the posts you have created');
         }
       });
   }
-  async likePost(forumID){
+  async likePost(forumID) {
     var postLikes;
     await firestore()
       .collection('forums')
@@ -209,24 +234,36 @@ export default class ClassForums extends Component {
       .doc(forumID)
       .update({
         likes: postLikes + 1,
-    });
+      });
     this.getForums(this.state.classID);
   }
+
   render() {
     return (
       <ScrollView style={styles.container}>
         <View>
           <Dialog
-            dialogStyle={{marginTop: -10, height: '90%'}}
+            dialogStyle={{
+              marginTop: -10,
+              height: '90%',
+            }}
             visible={this.state.dialogVisible}
-            onTouchOutside={() => this.setState({dialogVisible: false})}>
+            onTouchOutside={() =>
+              this.setState({
+                dialogVisible: false,
+              })
+            }>
             <ScrollView>
               <MaterialCommunityIcons
                 style={{alignSelf: 'flex-end'}}
                 name="close"
                 color="#aa5ab4"
                 size={26}
-                onPress={() => this.setState({dialogVisible: false})}
+                onPress={() =>
+                  this.setState({
+                    dialogVisible: false,
+                  })
+                }
               />
               <Text
                 style={{
@@ -258,12 +295,27 @@ export default class ClassForums extends Component {
                   onBlur={() => this.descriptionValidator()}
                 />
               </View>
-              <View style={{paddingLeft: '12%', alignItems: 'flex-start'}}>
+              <View
+                style={{
+                  paddingLeft: '12%',
+                  alignItems: 'flex-start',
+                }}>
                 <Text style={{color: 'red'}}>
                   {this.state.descriptionError}
                 </Text>
               </View>
-
+              <Text
+                style={{
+                  marginTop: 10,
+                  marginBottom: 2,
+                  color: '#aa5ab4',
+                  marginLeft: 25,
+                  fontWeight: 'bold',
+                  fontSize: 17,
+                }}>
+                Image :
+              </Text>
+              <UploadScreen />
               <TouchableOpacity
                 onPress={() => this.createForum()}
                 style={{
@@ -357,14 +409,19 @@ export default class ClassForums extends Component {
                       justifyContent: 'flex-end',
                     }}>
                     <MaterialCommunityIcons
-                      style={{alignSelf: 'flex-end', marginRight: 10}}
+                      style={{
+                        alignSelf: 'flex-end',
+                        marginRight: 10,
+                      }}
                       name="thumb-up-outline"
                       color="#aa5ab4"
                       size={25}
                       onPress={() => this.likePost(item.forumID)}
                     />
                     <MaterialCommunityIcons
-                      style={{alignSelf: 'flex-end'}}
+                      style={{
+                        alignSelf: 'flex-end',
+                      }}
                       name="delete-outline"
                       color="#aa5ab4"
                       size={25}
@@ -380,6 +437,10 @@ export default class ClassForums extends Component {
                     }}>
                     {item.description}
                   </Text>
+                  <Image
+                    style={{height: 200, width: 300}}
+                    source={{uri: item.imageLink}}
+                  />
                   <Text
                     style={{
                       fontSize: 13,
@@ -389,17 +450,27 @@ export default class ClassForums extends Component {
                     }}>
                     Created by {item.creatorName}
                   </Text>
-                  <View style={{flexDirection:'row',marginLeft:25}}>
-                  <MaterialCommunityIcons
-                    style={{ alignSelf: 'flex-end', marginRight: 10 }}
-                    name="thumb-up-outline"
-                    color="#aa5ab4"
-                    size={15}
-                    onPress={() => this.setState({ dialogVisible: false })}
-                  />
-                    <Text style={{ color: '#aa5ab4'}}>Likes : {item.likes}</Text>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      marginLeft: 25,
+                    }}>
+                    <MaterialCommunityIcons
+                      style={{
+                        alignSelf: 'flex-end',
+                        marginRight: 10,
+                      }}
+                      name="thumb-up-outline"
+                      color="#aa5ab4"
+                      size={15}
+                      onPress={() =>
+                        this.setState({
+                          dialogVisible: false,
+                        })
+                      }
+                    />
+                    <Text style={{color: '#aa5ab4'}}>Likes : {item.likes}</Text>
                   </View>
-
                 </View>
               </Fragment>
             )}
