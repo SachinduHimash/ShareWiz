@@ -107,8 +107,11 @@ export default function UploadScreen() {
     setUploading(false);
     Alert.alert('Photo uploaded!', 'Your photo has been uploaded to the post!');
     setImage(null);
+    let storedObject = {};
+    storedObject.imageLink = filename;
+    storedObject.isAvailable = true;
     try {
-      await AsyncStorage.setItem('ImageLink', filename);
+      await AsyncStorage.setItem('ImageLink', JSON.stringify(storedObject));
     } catch (error) {
       console.log("Couldn't send link");
     }

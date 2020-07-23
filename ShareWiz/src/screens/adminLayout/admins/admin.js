@@ -187,6 +187,8 @@ export default class Admin extends Component {
               email: this.state.email,
               role: this.state.role,
               active: true,
+              isPicture: false,
+              profilePic: '',
             })
             .then(() => {
               firestore()

@@ -85,8 +85,20 @@ export default class ClassForums extends Component {
     console.log(this.props.navigation.state.params.classID);
     var classID = this.props.navigation.state.params.classID;
 
+    this.setObject();
     this.getClassDetails(classID);
     this.getForums(classID);
+  }
+
+  async setObject() {
+    let storedObject = {};
+    storedObject.imageLink = '';
+    storedObject.isAvailable = false;
+    try {
+      await AsyncStorage.setItem('ImageLink', JSON.stringify(storedObject));
+    } catch (error) {
+      console.log("Couldn't set the object at constructor");
+    }
   }
 
   getForums = async classID => {
@@ -151,51 +163,109 @@ export default class ClassForums extends Component {
   }
 
   async createForum() {
-    const imageLink = await AsyncStorage.getItem('ImageLink');
-    await AsyncStorage.removeItem('ImageLink');
-    console.log(imageLink);
-    var finalUrl;
-    await storage()
-      .ref(imageLink)
-      .getDownloadURL()
-      .then(url => {
-        console.log(url);
-        finalUrl = url;
-      });
-    this.descriptionValidator();
-    if (this.state.description !== '') {
-      console.log(this.props.navigation.state.params.fileName);
-      var currentUser = auth().currentUser;
-      var creatorName;
-      var refID;
-      await firestore()
-        .collection('users')
-        .doc(currentUser.uid)
-        .get()
-        .then(data => {
-          creatorName = data._data.firstName + ' ' + data._data.lastName;
-        });
+    console.log('this is :', isAvailable);
+    const infoValue = await AsyncStorage.getItem('ImageLink');
+    let resObject = JSON.parse(infoValue);
+    const imageLink = resObject.imageLink;
+    const isAvailable = resObject.isAvailable;
 
-      var ref = await firestore()
-        .collection('forums')
-        .doc();
-      refID = ref.id;
-      await firestore()
-        .collection('forums')
-        .doc(refID)
-        .set({
-          description: this.state.description,
-          teacherID: this.state.teacherID,
-          creatorID: currentUser.uid,
-          creatorName: creatorName,
-          createdAt: new Date(),
-          classID: this.state.classID,
-          forumID: refID,
-          likes: 0,
-          imageLink: finalUrl,
+    if (isAvailable === true) {
+      console.log('aaaa');
+      await AsyncStorage.removeItem('ImageLink');
+      console.log(imageLink);
+      var finalUrl;
+      await storage()
+        .ref(imageLink)
+        .getDownloadURL()
+        .then(url => {
+          console.log(url);
+          finalUrl = url;
         });
-      this.getForums(this.state.classID);
+      this.descriptionValidator();
+      if (this.state.description !== '') {
+        console.log(this.props.navigation.state.params.fileName);
+        var currentUser = auth().currentUser;
+        var creatorName;
+        var refID;
+        await firestore()
+          .collection('users')
+          .doc(currentUser.uid)
+          .get()
+          .then(data => {
+            creatorName = data._data.firstName + ' ' + data._data.lastName;
+          });
+
+        var ref = await firestore()
+          .collection('forums')
+          .doc();
+        refID = ref.id;
+        await firestore()
+          .collection('forums')
+          .doc(refID)
+          .set({
+            description: this.state.description,
+            teacherID: this.state.teacherID,
+            creatorID: currentUser.uid,
+            creatorName: creatorName,
+            createdAt: new Date(),
+            classID: this.state.classID,
+            forumID: refID,
+            likes: 0,
+            imageLink: finalUrl,
+            hasImage: true,
+          });
+        let storedObject = {};
+        storedObject.imageLink = '';
+        storedObject.isAvailable = false;
+        try {
+          await AsyncStorage.setItem('ImageLink', JSON.stringify(storedObject));
+        } catch (error) {
+          console.log("Couldn't set the link to false");
+        }
+        this.getForums(this.state.classID);
+      }
+    } else {
+      console.log('aaaabbbb');
+
+      this.descriptionValidator();
+      if (this.state.description !== '') {
+        console.log(this.props.navigation.state.params.fileName);
+        var currentUser = auth().currentUser;
+        var creatorName;
+        var refID;
+        await firestore()
+          .collection('users')
+          .doc(currentUser.uid)
+          .get()
+          .then(data => {
+            creatorName = data._data.firstName + ' ' + data._data.lastName;
+          });
+
+        var ref = await firestore()
+          .collection('forums')
+          .doc();
+        refID = ref.id;
+        await firestore()
+          .collection('forums')
+          .doc(refID)
+          .set({
+            description: this.state.description,
+            teacherID: this.state.teacherID,
+            creatorID: currentUser.uid,
+            creatorName: creatorName,
+            createdAt: new Date(),
+            classID: this.state.classID,
+            forumID: refID,
+            likes: 0,
+            hasImage: false,
+          });
+
+        this.getForums(this.state.classID);
+      }
     }
+    this.setState({
+      dialogVisible: false,
+    });
   }
   async deletePost(forumID) {
     var currentUserID = auth().currentUser.uid;
@@ -437,10 +507,12 @@ export default class ClassForums extends Component {
                     }}>
                     {item.description}
                   </Text>
-                  <Image
-                    style={{height: 200, width: 300}}
-                    source={{uri: item.imageLink}}
-                  />
+                  {item.hasImage === true && (
+                    <Image
+                      style={{height: 200, width: 300}}
+                      source={{uri: item.imageLink}}
+                    />
+                  )}
                   <Text
                     style={{
                       fontSize: 13,

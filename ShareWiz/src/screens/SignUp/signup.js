@@ -178,6 +178,8 @@ export default class SignUp extends Component {
               role: this.state.role.value,
               active: true,
               isFirstTime: true,
+              isPicture: false,
+              profilePic: '',
             })
             .then(snapshot => {
               if (this.state.role.value === 'student') {

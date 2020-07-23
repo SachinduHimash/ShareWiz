@@ -188,6 +188,8 @@ export default class AdminStudents extends Component {
               role: this.state.role,
               active: true,
               isFirstTime: true,
+              isPicture: false,
+              profilePic: '',
             })
             .then(() => {
               firestore()

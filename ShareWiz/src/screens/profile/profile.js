@@ -22,6 +22,10 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import * as firebase from 'firebase';
 import Welcome from '../Welcome_page';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import {Dialog} from 'react-native-simple-dialogs';
+import ProfileUpload from './uploadScreen';
+import {AsyncStorage} from 'react-native';
 
 const styles = StyleSheet.create({
   container: {
@@ -63,6 +67,7 @@ export default class Profile extends Component {
   constructor(props) {
     super(props);
     this.getUserDetails();
+    this.getProfilePicture();
   }
 
   state = {
@@ -76,6 +81,9 @@ export default class Profile extends Component {
     confirmPasswordError: '',
     currentPassword: '',
     currentPasswordError: '',
+    isPicture: '',
+    profilePic: '',
+    dialogVisible: false,
   };
 
   getUserDetails() {
@@ -98,6 +106,27 @@ export default class Profile extends Component {
             userEmail: documentSnapShot.data().email,
           });
         });
+    }
+  }
+  async getProfilePicture() {
+    var currentUserID = auth().currentUser.uid;
+    this.setState({userID: currentUserID});
+    await firestore()
+      .collection('users')
+      .doc(currentUserID)
+      .get()
+      .then(snapShot => {
+        this.setState({
+          isPicture: snapShot._data.isPicture,
+          profilePic: snapShot._data.profilePic,
+        });
+      });
+
+    try {
+      await AsyncStorage.setItem('UserID', currentUserID);
+      console.log('User ID set');
+    } catch (error) {
+      console.log("Couldn't set user ID");
     }
   }
   currentPasswordValidator() {
@@ -140,21 +169,6 @@ export default class Profile extends Component {
     }
   }
 
-  uploadFile = () => {
-    ImagePicker.launchImageLibrary(imagePickerOptions, response => {
-      if (response.didCancel) {
-      } else {
-        setImageURI({uri: response.uri});
-
-        console.log(
-          'My file storage reference is: ',
-          createStorageReferenceToFile(response),
-        );
-        // Add this
-        Promise.resolve(uploadFileToFireBase(response));
-      }
-    });
-  };
   reauthenticate(currentPassword) {
     console.log('ggggggggggggggggggggggggg');
     var user = auth().currentUser;
@@ -198,7 +212,12 @@ export default class Profile extends Component {
   async signOut() {
     await auth().signOut();
 
-    this.props.navigation.navigate('Teachers');
+    this.props.navigation.navigate('Welcome');
+  }
+
+  dialogClose() {
+    this.getProfilePicture();
+    this.setState({dialogVisible: false});
   }
 
   render() {
@@ -209,15 +228,40 @@ export default class Profile extends Component {
             alignItems: 'center',
             paddingTop: 15,
           }}>
-          <Avatar
-            avatarStyle={styles.avatar}
-            source={propic}
-            size="xlarge"
-            rounded
-            showEditButton
-            onPress={() => console.log('Works!')}
-            activeOpacity={0.7}
-          />
+          <View style={{flexDirection: 'row', paddingLeft: '5%'}}>
+            {this.state.isPicture === false && (
+              <Avatar
+                avatarStyle={styles.avatar}
+                source={propic}
+                size="xlarge"
+                rounded
+                activeOpacity={0.7}
+              />
+            )}
+            {this.state.isPicture === true && (
+              <Avatar
+                avatarStyle={styles.avatar}
+                source={{uri: this.state.profilePic}}
+                size="xlarge"
+                rounded
+                activeOpacity={0.7}
+              />
+            )}
+
+            <MaterialCommunityIcons
+              style={{
+                marginTop: '30%',
+              }}
+              name="pencil"
+              color="#aa5ab4"
+              size={26}
+              onPress={() =>
+                this.setState({
+                  dialogVisible: true,
+                })
+              }
+            />
+          </View>
           <Text
             style={{
               color: 'black',
@@ -298,7 +342,10 @@ export default class Profile extends Component {
               autoCompleteType="password"
               placeholder="Enter your current password"
               placeholderTextColor="#aa5ab4"
-              onChangeText={currentPassword => this.setState({currentPassword})}
+              // eslint-disable-next-line prettier/prettier
+              onChangeText={currentPassword =>
+                this.setState({currentPassword})
+              }
               value={this.state.currentPassword}
               onBlur={() => this.currentPasswordValidator()}
             />
@@ -352,7 +399,10 @@ export default class Profile extends Component {
               autoCompleteType="password"
               placeholder="Confirm your new password"
               placeholderTextColor="#aa5ab4"
-              onChangeText={confirmPassword => this.setState({confirmPassword})}
+              // eslint-disable-next-line prettier/prettier
+              onChangeText={confirmPassword =>
+                this.setState({confirmPassword})
+              }
               value={this.state.confirmPassword}
               onBlur={() => this.confirmPasswordValidator()}
             />
@@ -396,6 +446,28 @@ export default class Profile extends Component {
               </Text>
             </LinearGradient>
           </TouchableOpacity>
+        </View>
+        <View>
+          <Dialog
+            dialogStyle={{marginTop: -10, height: '70%'}}
+            visible={this.state.dialogVisible}
+            onTouchOutside={() => this.setState({dialogVisible: false})}>
+            <ScrollView>
+              <MaterialCommunityIcons
+                style={{alignSelf: 'flex-end'}}
+                name="close"
+                color="#aa5ab4"
+                size={26}
+                onPress={() => this.dialogClose()}
+              />
+              <Text style={{fontSize: 25, color: '#aa5ab4'}}>
+                Upload your Profile Picture
+              </Text>
+              <View style={{marginTop: 40}}>
+                <ProfileUpload userID={this.state.userID} />
+              </View>
+            </ScrollView>
+          </Dialog>
         </View>
       </ScrollView>
     );

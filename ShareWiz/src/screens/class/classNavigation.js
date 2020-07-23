@@ -7,8 +7,6 @@ import {NavigationContainer} from '@react-navigation/native';
 import ClassList from './classList';
 import ClassForums from './class';
 
-
-
 export default class ClassNavigation extends Component {
   render() {
     return <AppContainer />;
