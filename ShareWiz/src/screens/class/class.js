@@ -186,6 +186,7 @@ export default class ClassForums extends Component {
         console.log(this.props.navigation.state.params.fileName);
         var currentUser = auth().currentUser;
         var creatorName;
+        var creatorPic;
         var refID;
         await firestore()
           .collection('users')
@@ -193,6 +194,7 @@ export default class ClassForums extends Component {
           .get()
           .then(data => {
             creatorName = data._data.firstName + ' ' + data._data.lastName;
+            creatorPic = data._data.profilePic;
           });
 
         var ref = await firestore()
@@ -207,6 +209,7 @@ export default class ClassForums extends Component {
             teacherID: this.state.teacherID,
             creatorID: currentUser.uid,
             creatorName: creatorName,
+            creatorPic: creatorPic,
             createdAt: new Date(),
             classID: this.state.classID,
             forumID: refID,
@@ -232,6 +235,7 @@ export default class ClassForums extends Component {
         console.log(this.props.navigation.state.params.fileName);
         var currentUser = auth().currentUser;
         var creatorName;
+        var creatorPic;
         var refID;
         await firestore()
           .collection('users')
@@ -239,6 +243,7 @@ export default class ClassForums extends Component {
           .get()
           .then(data => {
             creatorName = data._data.firstName + ' ' + data._data.lastName;
+            creatorPic = data._data.profilePic;
           });
 
         var ref = await firestore()
@@ -253,6 +258,7 @@ export default class ClassForums extends Component {
             teacherID: this.state.teacherID,
             creatorID: currentUser.uid,
             creatorName: creatorName,
+            creatorPic: creatorPic,
             createdAt: new Date(),
             classID: this.state.classID,
             forumID: refID,
@@ -476,27 +482,56 @@ export default class ClassForums extends Component {
                     style={{
                       marginRight: 10,
                       flexDirection: 'row',
-                      justifyContent: 'flex-end',
                     }}>
-                    <MaterialCommunityIcons
-                      style={{
-                        alignSelf: 'flex-end',
-                        marginRight: 10,
-                      }}
-                      name="thumb-up-outline"
-                      color="#aa5ab4"
-                      size={25}
-                      onPress={() => this.likePost(item.forumID)}
+                    <Image
+                      source={{uri: item.creatorPic}}
+                      style={{borderRadius: 40, height: 30, width: 30,marginLeft:17}}
                     />
-                    <MaterialCommunityIcons
+                    <Text
                       style={{
-                        alignSelf: 'flex-end',
-                      }}
-                      name="delete-outline"
-                      color="#aa5ab4"
-                      size={25}
-                      onPress={() => this.deletePost(item.forumID)}
-                    />
+                        fontSize: 15,
+                        color: '#aa5ab4',
+                        marginLeft: 10,
+                        fontWeight: 'bold',
+                      }}>
+                      {item.creatorName}
+                    </Text>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'flex-end',
+                      }}>
+                      <MaterialCommunityIcons
+                        style={{
+                          alignSelf: 'flex-end',
+                          marginRight: 13,
+                          marginLeft: '30%',
+                        }}
+                        name="comment-outline"
+                        color="#aa5ab4"
+                        size={25}
+                        onPress={() => this.likePost(item.forumID)}
+                      />
+                      <MaterialCommunityIcons
+                        style={{
+                          alignSelf: 'flex-end',
+                          marginRight: 10,
+                        }}
+                        name="thumb-up-outline"
+                        color="#aa5ab4"
+                        size={25}
+                        onPress={() => this.likePost(item.forumID)}
+                      />
+                      <MaterialCommunityIcons
+                        style={{
+                          alignSelf: 'flex-end',
+                        }}
+                        name="delete-outline"
+                        color="#aa5ab4"
+                        size={25}
+                        onPress={() => this.deletePost(item.forumID)}
+                      />
+                    </View>
                   </View>
                   <Text
                     style={{
@@ -504,24 +539,17 @@ export default class ClassForums extends Component {
                       color: '#aa5ab4',
                       marginLeft: 25,
                       marginBottom: 10,
+                      marginTop: 10,
                     }}>
                     {item.description}
                   </Text>
                   {item.hasImage === true && (
                     <Image
-                      style={{height: 200, width: 300}}
+                      style={{height: 200, width: 300, marginLeft: 25}}
                       source={{uri: item.imageLink}}
                     />
                   )}
-                  <Text
-                    style={{
-                      fontSize: 13,
-                      color: '#aa5ab4',
-                      marginLeft: 25,
-                      fontStyle: 'italic',
-                    }}>
-                    Created by {item.creatorName}
-                  </Text>
+
                   <View
                     style={{
                       flexDirection: 'row',

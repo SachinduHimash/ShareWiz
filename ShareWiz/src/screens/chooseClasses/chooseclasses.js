@@ -83,6 +83,7 @@ const styles = StyleSheet.create({
   },
 });
 
+const enableList = [];
 export default class ChooseClasses extends Component {
   static navigationOptions = ({navigation}) => {
     return {
@@ -94,13 +95,14 @@ export default class ChooseClasses extends Component {
     this.getClasses();
     this.state = {
       classList: [],
+      isFirstTime: true,
     };
   }
   state = {};
 
   getClasses = async () => {
     var snapShotList = [];
-    var enableList = [];
+
     var snapShot = await firestore()
       .collection('classes')
       .get();
@@ -109,6 +111,12 @@ export default class ChooseClasses extends Component {
     });
     this.setState({classList: snapShotList});
     console.log(this.state.classList);
+    if (this.state.isFirstTime) {
+      snapShotList.forEach(item => {
+        enableList[item.classID] = false;
+      });
+      this.setState({isFirstTime: false});
+    }
   };
 
   async sendTeacherNotification(classID) {
@@ -186,7 +194,10 @@ export default class ChooseClasses extends Component {
             userID,
             userName,
           });
+        enableList[classID] = true;
         this.sendTeacherNotification(classID);
+        this.getClasses();
+        console.log('mylist is ::::', enableList);
       })
       .catch(error => console.log(error));
   }
@@ -199,6 +210,7 @@ export default class ChooseClasses extends Component {
         isFirstTime: false,
       })
       .then(() => {
+        Alert.alert('Success', 'Please upload your profile picture');
         this.props.navigation.navigate('StudentLayout');
       });
   }
@@ -237,39 +249,76 @@ export default class ChooseClasses extends Component {
                         flexDirection: 'row',
                         justifyContent: 'flex-start',
                       }}>
-                      <TouchableOpacity
-                        onPress={() => this.chooseClass(item.classID)}
-                        style={{
-                          height: 40,
-                          width: '30%',
-                          marginTop: 5,
-                          marginBottom: 5,
-                          borderRadius: 10,
-                          marginLeft: 20,
-
-                          alignItems: 'center',
-                        }}>
-                        <LinearGradient
+                      {enableList[item.classID] === false && (
+                        <TouchableOpacity
+                          onPress={() => this.chooseClass(item.classID)}
                           style={{
-                            height: '100%',
-                            width: '100%',
-
-                            marginTop: '3%',
-                            color: '#aa5ab4',
+                            height: 40,
+                            width: '30%',
+                            marginTop: 5,
+                            marginBottom: 5,
                             borderRadius: 10,
+                            marginLeft: 20,
 
-                            justifyContent: 'center',
                             alignItems: 'center',
-                          }}
-                          colors={['#aa5ab4', '#873991']}>
-                          <Text
+                          }}>
+                          <LinearGradient
                             style={{
-                              color: 'white',
-                            }}>
-                            Choose
-                          </Text>
-                        </LinearGradient>
-                      </TouchableOpacity>
+                              height: '100%',
+                              width: '100%',
+
+                              marginTop: '3%',
+                              color: '#aa5ab4',
+                              borderRadius: 10,
+
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                            }}
+                            colors={['#aa5ab4', '#873991']}>
+                            <Text
+                              style={{
+                                color: 'white',
+                              }}>
+                              Choose
+                            </Text>
+                          </LinearGradient>
+                        </TouchableOpacity>
+                      )}
+                      {enableList[item.classID] === true && (
+                        <TouchableOpacity
+                          disabled
+                          style={{
+                            height: 40,
+                            width: '30%',
+                            marginTop: 5,
+                            marginBottom: 5,
+                            borderRadius: 10,
+                            marginLeft: 20,
+
+                            alignItems: 'center',
+                          }}>
+                          <LinearGradient
+                            style={{
+                              height: '100%',
+                              width: '100%',
+
+                              marginTop: '3%',
+                              color: '#aa5ab4',
+                              borderRadius: 10,
+
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                            }}
+                            colors={['#5c5c5c', '#383838']}>
+                            <Text
+                              style={{
+                                color: 'white',
+                              }}>
+                              Choose
+                            </Text>
+                          </LinearGradient>
+                        </TouchableOpacity>
+                      )}
                     </View>
                   </View>
                 </Fragment>

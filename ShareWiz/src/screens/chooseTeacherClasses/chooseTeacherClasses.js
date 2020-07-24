@@ -111,11 +111,12 @@ export default class ChooseTeacherClasses extends Component {
     console.log(this.state.classList);
   };
 
-  async chooseClass(classID) {
+  async chooseClass(classID, teacherName) {
     var currentUser = auth().currentUser;
     var userID = currentUser.uid;
 
     var className;
+    var currentUserName;
 
     await firestore()
       .collection('classes')
@@ -128,22 +129,33 @@ export default class ChooseTeacherClasses extends Component {
       });
     await firestore()
       .collection('users')
-      .doc(currentUser.uid)
-      .collection('classes')
-      .doc(classID)
-      .set({
-        classID,
-        className,
-      })
-      .then(() => {
-        firestore()
-          .collection('classes')
-          .doc(classID)
-          .update({
-            teacherID: userID,
-          });
-      })
-      .catch(error => console.log(error));
+      .doc(userID)
+      .get()
+      .then(data => {
+        currentUserName = data._data.firstName + ' ' + data._data.lastName;
+      });
+    if (currentUserName === teacherName) {
+      await firestore()
+        .collection('users')
+        .doc(currentUser.uid)
+        .collection('classes')
+        .doc(classID)
+        .set({
+          classID,
+          className,
+        })
+        .then(() => {
+          firestore()
+            .collection('classes')
+            .doc(classID)
+            .update({
+              teacherID: userID,
+            });
+        })
+        .catch(error => console.log(error));
+    } else {
+      alert('You can only choose the classes conducted by you');
+    }
   }
   submit() {
     var currentUser = auth().currentUser;
@@ -154,6 +166,7 @@ export default class ChooseTeacherClasses extends Component {
         isFirstTime: false,
       })
       .then(() => {
+        Alert.alert('Success', 'Please upload your profile picture');
         this.props.navigation.navigate('TeacherLayout');
       });
   }
@@ -193,7 +206,9 @@ export default class ChooseTeacherClasses extends Component {
                         justifyContent: 'flex-start',
                       }}>
                       <TouchableOpacity
-                        onPress={() => this.chooseClass(item.classID)}
+                        onPress={() =>
+                          this.chooseClass(item.classID, item.teacherName)
+                        }
                         style={{
                           height: 40,
                           width: '30%',

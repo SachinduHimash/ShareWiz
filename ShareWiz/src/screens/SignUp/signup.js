@@ -193,6 +193,11 @@ export default class SignUp extends Component {
                     userID: data.user.uid,
                   })
                   .then(() => {
+                    // eslint-disable-next-line no-alert
+                    Alert.alert(
+                      'Success',
+                      'You have created your account.Please login now.',
+                    );
                     this.props.navigation.navigate('Welcome');
                   })
                   .catch(error => console.log(error));
