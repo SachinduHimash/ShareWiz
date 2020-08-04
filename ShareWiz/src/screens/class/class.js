@@ -76,6 +76,7 @@ export default class ClassForums extends Component {
     this.state = {
       snapShopList2: [],
       forumList: [],
+      commentList: [],
       classID: '',
       className: '',
       teacherID: '',
@@ -123,6 +124,22 @@ export default class ClassForums extends Component {
     console.log(this.state.forumList);
   };
 
+  getComments = async forumID => {
+    var snapShotList = [];
+
+    var snapShot = await firestore()
+      .collection('forums')
+      .doc(forumID)
+      .collection('comments')
+      .orderBy('createdAt', 'desc')
+      .get();
+    snapShot.forEach(doc => {
+      snapShotList.push(doc._data);
+    });
+
+    this.setState({commentList: snapShotList});
+  };
+
   async getClassDetails(classID) {
     var className;
     var teacherID;
@@ -149,12 +166,23 @@ export default class ClassForums extends Component {
       });
     }
   }
+  commentValidator() {
+    if (this.state.comment === '') {
+      this.setState({
+        descriptionError: 'Please enter your comment',
+      });
+    }
+  }
   state = {
     dialogVisible: false,
     dialogVisible2: false,
     description: '',
     descriptionError: '',
+    commentError: '',
     imageLink: '',
+    commentDialog: false,
+    currentForumID: '',
+    comment: '',
   };
 
   openDialog() {
@@ -271,6 +299,7 @@ export default class ClassForums extends Component {
     }
     this.setState({
       dialogVisible: false,
+      description: '',
     });
   }
   async deletePost(forumID) {
@@ -314,6 +343,34 @@ export default class ClassForums extends Component {
     this.getForums(this.state.classID);
   }
 
+  openCommentDialog(forumID) {
+    this.getComments(forumID);
+    this.setState({
+      commentDialog: true,
+      currentForumID: forumID,
+    });
+  }
+
+  async commentPost() {
+    var refID;
+    var ref = await firestore()
+      .collection('forums')
+      .doc();
+    refID = ref.id;
+    await firestore()
+      .collection('forums')
+      .doc(this.state.currentForumID)
+      .collection('comments')
+      .doc(refID)
+      .set({
+        comment: this.state.comment,
+        commentID: refID,
+      })
+      .then(() => {
+        this.getComments(this.state.currentForumID);
+      });
+  }
+
   render() {
     return (
       <ScrollView style={styles.container}>
@@ -327,6 +384,7 @@ export default class ClassForums extends Component {
             onTouchOutside={() =>
               this.setState({
                 dialogVisible: false,
+                description: '',
               })
             }>
             <ScrollView>
@@ -338,6 +396,7 @@ export default class ClassForums extends Component {
                 onPress={() =>
                   this.setState({
                     dialogVisible: false,
+                    description: '',
                   })
                 }
               />
@@ -429,6 +488,114 @@ export default class ClassForums extends Component {
             </ScrollView>
           </Dialog>
         </View>
+        <View>
+          <Dialog
+            dialogStyle={{
+              marginTop: -10,
+              height: '90%',
+            }}
+            visible={this.state.commentDialog}
+            onTouchOutside={() =>
+              this.setState({
+                commentDialog: false,
+              })
+            }>
+            <ScrollView>
+              <MaterialCommunityIcons
+                style={{alignSelf: 'flex-end'}}
+                name="close"
+                color="#aa5ab4"
+                size={26}
+                onPress={() =>
+                  this.setState({
+                    commentDialog: false,
+                  })
+                }
+              />
+              <Text
+                style={{
+                  alignSelf: 'center',
+                  color: '#aa5ab4',
+                  fontSize: 30,
+                  fontWeight: '600',
+                }}>
+                Comment to the post
+              </Text>
+
+              <Text
+                style={{
+                  marginTop: 10,
+                  marginBottom: 2,
+                  color: '#aa5ab4',
+                  marginLeft: 25,
+                  fontWeight: 'bold',
+                  fontSize: 17,
+                }}>
+                Comment
+              </Text>
+              <View style={styles.text_input}>
+                <TextInput
+                  placeholder="Enter your comment"
+                  placeholderTextColor="#aa5ab4"
+                  onChangeText={comment => this.setState({comment})}
+                  value={this.state.comment}
+                  onBlur={() => this.commentValidator()}
+                />
+              </View>
+              <View
+                style={{
+                  paddingLeft: '12%',
+                  alignItems: 'flex-start',
+                }}>
+                <Text style={{color: 'red'}}>{this.state.commentError}</Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => this.commentPost()}
+                style={{
+                  height: 40,
+                  width: '45%',
+                  marginTop: '5%',
+                  marginBottom: '5%',
+                  borderRadius: 10,
+                  marginLeft: 25,
+                  alignSelf: 'flex-start',
+                  justifyContent: 'flex-start',
+                  alignItems: 'flex-start',
+                }}>
+                <LinearGradient
+                  style={{
+                    height: '100%',
+                    width: '100%',
+
+                    marginTop: '3%',
+                    color: '#aa5ab4',
+                    borderRadius: 10,
+
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                  colors={['#aa5ab4', '#873991']}>
+                  <Text
+                    style={{
+                      color: 'white',
+                    }}>
+                    Comment
+                  </Text>
+                </LinearGradient>
+              </TouchableOpacity>
+              <FlatList
+                data={this.state.commentList}
+                renderItem={({item}) => (
+                  <Fragment>
+                    <View style={styles.card2}>
+                      <Text>{item.comment}</Text>
+                    </View>
+                  </Fragment>
+                )}
+              />
+            </ScrollView>
+          </Dialog>
+        </View>
         <Text
           style={{
             fontSize: 25,
@@ -485,7 +652,12 @@ export default class ClassForums extends Component {
                     }}>
                     <Image
                       source={{uri: item.creatorPic}}
-                      style={{borderRadius: 40, height: 30, width: 30,marginLeft:17}}
+                      style={{
+                        borderRadius: 40,
+                        height: 30,
+                        width: 30,
+                        marginLeft: 17,
+                      }}
                     />
                     <Text
                       style={{
@@ -510,7 +682,7 @@ export default class ClassForums extends Component {
                         name="comment-outline"
                         color="#aa5ab4"
                         size={25}
-                        onPress={() => this.likePost(item.forumID)}
+                        onPress={() => this.openCommentDialog(item.forumID)}
                       />
                       <MaterialCommunityIcons
                         style={{
