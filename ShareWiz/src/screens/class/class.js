@@ -11,6 +11,7 @@ import {
   FlatList,
   AsyncStorage,
   Image,
+  Alert,
 } from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import LinearGradient from 'react-native-linear-gradient';
@@ -20,7 +21,9 @@ import {Dialog} from 'react-native-simple-dialogs';
 import {Icon} from 'react-native-elements';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import UploadScreen from './uploadScreen';
+import PdfUploadScreen from './pdfUploadScreen';
 import storage from '@react-native-firebase/storage';
+// import RNFetchBlob from 'rn-fetch-blob';
 
 const styles = StyleSheet.create({
   container: {
@@ -135,9 +138,11 @@ export default class ClassForums extends Component {
       .get();
     snapShot.forEach(doc => {
       snapShotList.push(doc._data);
+      console.log('hiiii' + snapShotList);
     });
 
     this.setState({commentList: snapShotList});
+    console.log(this.state.commentList);
   };
 
   async getClassDetails(classID) {
@@ -365,11 +370,43 @@ export default class ClassForums extends Component {
       .set({
         comment: this.state.comment,
         commentID: refID,
+        createdAt: new Date(),
       })
       .then(() => {
         this.getComments(this.state.currentForumID);
+        this.setState({comment: ''});
       });
   }
+  // download(imageLink) {
+  //   var date = new Date();
+  //   var url = imageLink;
+
+  //   var ext = this.extention(url);
+  //   ext = '.' + ext[0];
+  //   const {config, fs} = RNFetchBlob;
+  //   let PictureDir = fs.dirs.PictureDir;
+  //   let options = {
+  //     fileCache: true,
+  //     addAndroidDownloads: {
+  //       useDownloadManager: true,
+  //       notification: true,
+  //       path:
+  //         PictureDir +
+  //         '/image_' +
+  //         Math.floor(date.getTime() + date.getSeconds() / 2) +
+  //         ext,
+  //       description: 'Image',
+  //     },
+  //   };
+  //   config(options)
+  //     .fetch('GET', url)
+  //     .then(res => {
+  //       Alert.alert('Success Downloaded');
+  //     });
+  // }
+  // extention(filename) {
+  //   return /[.]/.exec(filename) ? /[^.]+$/.exec(filename) : undefined;
+  // }
 
   render() {
     return (
@@ -451,6 +488,18 @@ export default class ClassForums extends Component {
                 Image :
               </Text>
               <UploadScreen />
+              <Text
+                style={{
+                  marginTop: 10,
+                  marginBottom: 2,
+                  color: '#aa5ab4',
+                  marginLeft: 25,
+                  fontWeight: 'bold',
+                  fontSize: 17,
+                }}>
+                PDF :
+              </Text>
+              <PdfUploadScreen />
               <TouchableOpacity
                 onPress={() => this.createForum()}
                 style={{
@@ -588,7 +637,13 @@ export default class ClassForums extends Component {
                 renderItem={({item}) => (
                   <Fragment>
                     <View style={styles.card2}>
-                      <Text>{item.comment}</Text>
+                      <Text
+                        style={{
+                          color: '#aa5ab4',
+                          marginLeft: 25,
+                        }}>
+                        {item.comment}
+                      </Text>
                     </View>
                   </Fragment>
                 )}
@@ -647,11 +702,50 @@ export default class ClassForums extends Component {
                 <View style={styles.card2}>
                   <View
                     style={{
+                      flexDirection: 'row',
+                      alignItems: 'flex-end',
+                      justifyContent: 'flex-end',
+                    }}>
+                    <MaterialCommunityIcons
+                      style={{
+                        alignSelf: 'flex-end',
+                        marginRight: 13,
+                        marginLeft: '30%',
+                      }}
+                      name="comment-outline"
+                      color="#aa5ab4"
+                      size={25}
+                      onPress={() => this.openCommentDialog(item.forumID)}
+                    />
+                    <MaterialCommunityIcons
+                      style={{
+                        alignSelf: 'flex-end',
+                        marginRight: 10,
+                      }}
+                      name="thumb-up-outline"
+                      color="#aa5ab4"
+                      size={25}
+                      onPress={() => this.likePost(item.forumID)}
+                    />
+                    <MaterialCommunityIcons
+                      style={{
+                        alignSelf: 'flex-end',
+                      }}
+                      name="delete-outline"
+                      color="#aa5ab4"
+                      size={25}
+                      onPress={() => this.deletePost(item.forumID)}
+                    />
+                  </View>
+                  <View
+                    style={{
                       marginRight: 10,
                       flexDirection: 'row',
                     }}>
                     <Image
-                      source={{uri: item.creatorPic}}
+                      source={{
+                        uri: item.creatorPic,
+                      }}
                       style={{
                         borderRadius: 40,
                         height: 30,
@@ -668,42 +762,6 @@ export default class ClassForums extends Component {
                       }}>
                       {item.creatorName}
                     </Text>
-                    <View
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'flex-end',
-                      }}>
-                      <MaterialCommunityIcons
-                        style={{
-                          alignSelf: 'flex-end',
-                          marginRight: 13,
-                          marginLeft: '30%',
-                        }}
-                        name="comment-outline"
-                        color="#aa5ab4"
-                        size={25}
-                        onPress={() => this.openCommentDialog(item.forumID)}
-                      />
-                      <MaterialCommunityIcons
-                        style={{
-                          alignSelf: 'flex-end',
-                          marginRight: 10,
-                        }}
-                        name="thumb-up-outline"
-                        color="#aa5ab4"
-                        size={25}
-                        onPress={() => this.likePost(item.forumID)}
-                      />
-                      <MaterialCommunityIcons
-                        style={{
-                          alignSelf: 'flex-end',
-                        }}
-                        name="delete-outline"
-                        color="#aa5ab4"
-                        size={25}
-                        onPress={() => this.deletePost(item.forumID)}
-                      />
-                    </View>
                   </View>
                   <Text
                     style={{
@@ -717,9 +775,51 @@ export default class ClassForums extends Component {
                   </Text>
                   {item.hasImage === true && (
                     <Image
-                      style={{height: 200, width: 300, marginLeft: 25}}
-                      source={{uri: item.imageLink}}
+                      style={{
+                        height: 200,
+                        width: 300,
+                        marginLeft: 25,
+                      }}
+                      source={{
+                        uri: item.imageLink,
+                      }}
                     />
+                  )}
+                  {item.hasImage === true && (
+                    <TouchableOpacity
+                      //onPress= {}
+                      style={{
+                        height: 40,
+                        width: '85%',
+                        marginTop: '5%',
+                        marginBottom: '5%',
+                        borderRadius: 10,
+
+                        alignSelf: 'center',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                      <LinearGradient
+                        style={{
+                          height: '100%',
+                          width: '100%',
+
+                          marginTop: '3%',
+                          color: '#aa5ab4',
+                          borderRadius: 10,
+
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}
+                        colors={['#aa5ab4', '#873991']}>
+                        <Text
+                          style={{
+                            color: 'white',
+                          }}>
+                          Download this material
+                        </Text>
+                      </LinearGradient>
+                    </TouchableOpacity>
                   )}
 
                   <View

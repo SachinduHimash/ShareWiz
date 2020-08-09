@@ -7,6 +7,7 @@ import {
   View,
   TextInput,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import {Avatar} from 'react-native-elements';
 import {propic} from './../../../images';
@@ -20,12 +21,13 @@ import {
   StackNavigator,
 } from 'react-navigation';
 import LinearGradient from 'react-native-linear-gradient';
-import * as firebase from 'firebase';
+
 import Welcome from '../Welcome_page';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {Dialog} from 'react-native-simple-dialogs';
 import ProfileUpload from './uploadScreen';
 import {AsyncStorage} from 'react-native';
+import * as firebase from 'firebase';
 
 const styles = StyleSheet.create({
   container: {
@@ -60,6 +62,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     width: '85%',
     height: 40,
+    
   },
 });
 
@@ -189,22 +192,37 @@ export default class Profile extends Component {
       this.state.currentPassword !== '' &&
       this.state.confirmPassword !== ''
     ) {
-      await this.reauthenticate(this.state.currentPassword)
+      // await this.reauthenticate(this.state.currentPassword)
+      //   .then(() => {
+      //     console.log('ggggggggggggggggggggggggg');
+      //     var user = auth().currentUser;
+      //     user
+      //       .updatePassword(this.state.password)
+      //       .then(() => {
+      //         console.log('Password updated!');
+      //       })
+      //       .catch(error => {
+      //         console.log(error);
+      //         alert(error);
+      //       });
+      //   })
+      //   .catch(error => {
+      //     alert(error);
+      //   });
+      var user = auth().currentUser;
+      user
+        .updatePassword(this.state.password)
         .then(() => {
-          console.log('ggggggggggggggggggggggggg');
-          var user = auth().currentUser;
-          user
-            .updatePassword(this.state.password)
-            .then(() => {
-              console.log('Password updated!');
-            })
-            .catch(error => {
-              console.log(error);
-              alert(error);
-            });
+          Alert.alert('Password updated!');
+          this.setState({
+            password: '',
+            currentPassword: '',
+            confirmPassword: '',
+          });
         })
         .catch(error => {
-          alert(error);
+          console.log(error);
+          Alert.alert(error);
         });
     }
   }
@@ -340,6 +358,7 @@ export default class Profile extends Component {
               secureTextEntry={true}
               autoCapitalize="none"
               autoCompleteType="password"
+              style={{marginLeft: 5}}
               placeholder="Enter your current password"
               placeholderTextColor="#aa5ab4"
               // eslint-disable-next-line prettier/prettier
@@ -372,6 +391,7 @@ export default class Profile extends Component {
               autoCapitalize="none"
               autoCompleteType="password"
               placeholder="Enter your new password"
+              style={{marginLeft: 5}}
               placeholderTextColor="#aa5ab4"
               onChangeText={password => this.setState({password})}
               value={this.state.password}
@@ -398,6 +418,7 @@ export default class Profile extends Component {
               autoCapitalize="none"
               autoCompleteType="password"
               placeholder="Confirm your new password"
+              style={{marginLeft: 5}}
               placeholderTextColor="#aa5ab4"
               // eslint-disable-next-line prettier/prettier
               onChangeText={confirmPassword =>
